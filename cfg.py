@@ -18,9 +18,9 @@ def str2bool(v):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--world-size', default=-1, type=int,
+    parser.add_argument('--world-size', default=1, type=int,
                     help='number of nodes for distributed training')
-    parser.add_argument('--rank', default=-1, type=int,
+    parser.add_argument('--rank', default=0, type=int,
                         help='node rank for distributed training')
     parser.add_argument('--loca_rank', default=-1, type=int,
                         help='node rank for distributed training')
@@ -45,30 +45,30 @@ def parse_args():
     parser.add_argument(
         '--max_iter',
         type=int,
-        default=None,
+        default=500000,
         help='set the max iteration number')
     parser.add_argument(
         '-gen_bs',
         '--gen_batch_size',
         type=int,
-        default=64,
+        default=16,
         help='size of the batches')
     parser.add_argument(
         '-dis_bs',
         '--dis_batch_size',
         type=int,
-        default=64,
+        default=16,
         help='size of the batches')
     parser.add_argument(
         '-bs',
         '--batch_size',
         type=int,
-        default=64,
+        default=16,
         help='size of the batches to load dataset')
     parser.add_argument(
         '--g_lr',
         type=float,
-        default=0.0002,
+        default=0.0001,
         help='adam: gen learning rate')
     parser.add_argument(
         '--wd',
@@ -78,7 +78,7 @@ def parse_args():
     parser.add_argument(
         '--d_lr',
         type=float,
-        default=0.0002,
+        default=0.0003,
         help='adam: disc learning rate')
     parser.add_argument(
         '--ctrl_lr',
@@ -102,12 +102,12 @@ def parse_args():
     parser.add_argument(
         '--num_workers',
         type=int,
-        default=8,
+        default=16,
         help='number of cpu threads to use during batch generation')
     parser.add_argument(
         '--latent_dim',
         type=int,
-        default=128,
+        default=100,
         help='dimensionality of the latent space')
     parser.add_argument(
         '--img_size',
@@ -140,6 +140,7 @@ def parse_args():
         help='The reload model path')
     parser.add_argument(
         '--class_name',
+        default='Running',
         type=str,
         help='The class name to load in UniMiB dataset')
     parser.add_argument(
@@ -150,6 +151,7 @@ def parse_args():
     parser.add_argument(
         '--exp_name',
         type=str,
+        default='Running',
         help='The name of exp')
     parser.add_argument(
         '--d_spectral_norm',
@@ -164,26 +166,28 @@ def parse_args():
     parser.add_argument(
         '--dataset',
         type=str,
-        default='cifar10',
+        default='UniMiB',
         help='dataset type')
     parser.add_argument(
         '--data_path',
         type=str,
         default='./data',
         help='The path of data set')
-    parser.add_argument('--init_type', type=str, default='normal',
+    parser.add_argument('--init_type', type=str, default='xavier_uniform',
                         choices=['normal', 'orth', 'xavier_uniform', 'false'],
                         help='The init type')
-    parser.add_argument('--gf_dim', type=int, default=64,
+    parser.add_argument('--gf_dim', type=int, default=1024,
                         help='The base channel num of gen')
-    parser.add_argument('--df_dim', type=int, default=64,
+    parser.add_argument('--df_dim', type=int, default=384,
                         help='The base channel num of disc')
     parser.add_argument(
         '--gen_model',
+        default='my_gen',
         type=str,
         help='path of gen model')
     parser.add_argument(
         '--dis_model',
+        default='my_dis',
         type=str,
         help='path of dis model')
     parser.add_argument(
@@ -196,7 +200,7 @@ def parse_args():
     parser.add_argument(
         '--bottom_width',
         type=int,
-        default=4,
+        default=8,
         help="the base resolution of the GAN")
     parser.add_argument('--random_seed', type=int, default=12345)
 
@@ -239,13 +243,13 @@ def parse_args():
                         help='classes')
     parser.add_argument('--phi', type=float, default=1,
                         help='wgan-gp phi')
-    parser.add_argument('--grow_steps', nargs='+', type=int,
+    parser.add_argument('--grow_steps', nargs='+', type=int, default=[0, 0],
                         help='the vector of a discovered architecture')
     parser.add_argument('--D_downsample', type=str, default="avg",
                         help='downsampling type')
-    parser.add_argument('--fade_in', type=float, default=1,
+    parser.add_argument('--fade_in', type=float, default=0,
                         help='fade in step')
-    parser.add_argument('--d_depth', type=int, default=7,
+    parser.add_argument('--d_depth', type=int, default=3,
                         help='Discriminator Depth')
     parser.add_argument('--g_depth', type=str, default="5,4,2",
                         help='Generator Depth')
@@ -257,7 +261,7 @@ def parse_args():
                         help='Generator activation Layer')
     parser.add_argument('--d_act', type=str, default="gelu",
                         help='Discriminator activation layer')
-    parser.add_argument('--patch_size', type=int, default=4,
+    parser.add_argument('--patch_size', type=int, default=2,
                         help='Discriminator Depth')
     parser.add_argument('--fid_stat', type=str, default="None",
                         help='Discriminator Depth')
@@ -273,9 +277,9 @@ def parse_args():
                         help='number of heads')
     parser.add_argument('--dropout', type=float, default=0.,
                         help='dropout ratio')
-    parser.add_argument('--ema', type=float, default=0.995,
+    parser.add_argument('--ema', type=float, default=0.9999,
                         help='ema')
-    parser.add_argument('--ema_warmup', type=float, default=0.,
+    parser.add_argument('--ema_warmup', type=float, default=0.1,
                         help='ema warm up')
     parser.add_argument('--ema_kimg', type=int, default=500,
                         help='ema thousand images')
