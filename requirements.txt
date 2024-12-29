@@ -1,0 +1,14 @@
+matplotlib
+requests
+scikit-learn
+pandas
+tabulate
+torch
+tsaug
+torchvision
+einops
+torchsummary
+imageio
+tqdm
+opencv-python
+tensorboard
