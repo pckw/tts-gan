@@ -5,7 +5,7 @@ from __future__ import print_function
 import cfg
 # import models_search
 # import datasets
-from dataLoader import *
+from stock_dataLoader import *
 from GANModels import * 
 from functions import train, train_d, validate, save_samples, LinearLrDecay, load_params, copy_params, cur_stages
 from utils.utils import set_log_dir, save_checkpoint, create_logger
@@ -37,6 +37,7 @@ from torchvision.transforms import ToTensor
 
 def main():
     args = cfg.parse_args()
+    print(args)
     
 #     _init_inception()
 #     inception_path = check_or_download_inception(None)
@@ -114,9 +115,9 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # import network
     
-    gen_net = Generator()
+    gen_net = Generator(channels=6)
     print(gen_net)
-    dis_net = Discriminator()
+    dis_net = Discriminator(in_channels=6)
     print(dis_net)
     if not torch.cuda.is_available():
         print('using CPU, this will be slow')
@@ -189,21 +190,20 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # epoch number for dis_net
     args.max_epoch = args.max_epoch * args.n_critic
-#     dataset = datasets.ImageDataset(args, cur_img_size=8)
-#     train_loader = dataset.train
-#     train_sampler = dataset.train_sampler
     
-#     train_set = unimib_load_dataset(incl_xyz_accel = True, incl_rms_accel = False, incl_val_group = False, one_hot_encode = False, data_mode = 'Train')
-#     test_set = unimib_load_dataset(incl_xyz_accel = True, incl_rms_accel = False, incl_val_group = False, one_hot_encode = False, data_mode = 'Test')
-#     train_loader = data.DataLoader(train_set, batch_size=args.dis_batch_size, num_workers=args.num_workers, shuffle=True)
-#     test_loader = data.DataLoader(test_set, batch_size=args.dis_batch_size, num_workers=args.num_workers, shuffle=True)
-    
-    train_set = unimib_load_dataset(incl_xyz_accel = True, incl_rms_accel = False, incl_val_group = False, is_normalize = True, one_hot_encode = False, data_mode = 'Train', single_class = True, class_name = args.class_name, augment_times=args.augment_times)
-    train_loader = data.DataLoader(train_set, batch_size=args.batch_size, num_workers=args.num_workers, shuffle = True)
-    test_set = unimib_load_dataset(incl_xyz_accel = True, incl_rms_accel = False, incl_val_group = False, is_normalize = True, one_hot_encode = False, data_mode = 'Test', single_class = True, class_name = args.class_name)
-    test_loader = data.DataLoader(test_set, batch_size=args.batch_size, num_workers=args.num_workers, shuffle = True)
-    
-    print(len(train_loader))
+    train_set = stock_load_dataset(
+        is_normalize = True,
+        one_hot_encode = False,
+        data_mode = 'Train',
+        augment_times=None,
+        verbose=False
+    )
+    train_loader = data.DataLoader(
+        train_set,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        shuffle = True
+    )
     
     if args.max_iter:
         args.max_epoch = np.ceil(args.max_iter * args.n_critic / len(train_loader))
@@ -278,7 +278,19 @@ def main_worker(gpu, ngpus_per_node, args):
 #         else:
 #             #only train discriminator 
 #             train_d(args, gen_net, dis_net, dis_optimizer, train_loader, epoch, writer_dict,fixed_z, lr_schedulers)
-        train(args, gen_net, dis_net, gen_optimizer, dis_optimizer, gen_avg_param, train_loader, epoch, writer_dict,fixed_z, lr_schedulers)
+        train(
+            args,
+            gen_net,
+            dis_net,
+            gen_optimizer,
+            dis_optimizer,
+            gen_avg_param, 
+            train_loader,
+            epoch,
+            writer_dict,
+            fixed_z,
+            lr_schedulers
+        )
         
         if args.rank == 0 and args.show:
             backup_param = copy_params(gen_net)

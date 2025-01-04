@@ -27,14 +27,15 @@ def visualization (ori_data, generated_data, analysis, save_name):
     """  
     # Analysis sample size (for faster computation)
     anal_sample_no = min([1000, len(ori_data)])
-    idx = np.random.permutation(len(ori_data))[:anal_sample_no]
+    idx_ori = np.random.permutation(len(ori_data))[:anal_sample_no]
+    idx_gen = np.random.permutation(len(generated_data))[:anal_sample_no]
 
     # Data preprocessing
     ori_data = np.asarray(ori_data)
     generated_data = np.asarray(generated_data)  
 
-    ori_data = ori_data[idx]
-    generated_data = generated_data[idx]
+    ori_data = ori_data[idx_ori]
+    generated_data = generated_data[idx_gen]
 
     no, seq_len, dim = ori_data.shape  
 
